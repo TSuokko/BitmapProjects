@@ -1,0 +1,11 @@
+﻿  main.cpp
+main.obj : error LNK2019: unresolved external symbol __imp___glutInitWithExit referenced in function glutInit_ATEXIT_HACK
+main.obj : error LNK2019: unresolved external symbol __imp_glutInitDisplayMode referenced in function "int __cdecl StartCompare(int,char * *)" (?StartCompare@@YAHHPEAPEAD@Z)
+main.obj : error LNK2019: unresolved external symbol __imp_glutInitWindowSize referenced in function "int __cdecl StartCompare(int,char * *)" (?StartCompare@@YAHHPEAPEAD@Z)
+main.obj : error LNK2019: unresolved external symbol __imp_glutMainLoop referenced in function "int __cdecl StartCompare(int,char * *)" (?StartCompare@@YAHHPEAPEAD@Z)
+main.obj : error LNK2019: unresolved external symbol __imp___glutCreateWindowWithExit referenced in function glutCreateWindow_ATEXIT_HACK
+main.obj : error LNK2019: unresolved external symbol __imp_glutPostRedisplay referenced in function "void __cdecl draw(void)" (?draw@@YAXXZ)
+main.obj : error LNK2019: unresolved external symbol __imp_glutSwapBuffers referenced in function "void __cdecl draw(void)" (?draw@@YAXXZ)
+main.obj : error LNK2019: unresolved external symbol __imp_glutDisplayFunc referenced in function "int __cdecl StartCompare(int,char * *)" (?StartCompare@@YAHHPEAPEAD@Z)
+C:\Users\TuomasSuo\Desktop\BitmapComparison\/BitmapComparison/glut\glut32.lib : warning LNK4272: library machine type 'X86' conflicts with target machine type 'x64'
+C:\Users\TuomasSuo\Desktop\BitmapComparison\x64\Debug\BitmapComparison.exe : fatal error LNK1120: 8 unresolved externals
