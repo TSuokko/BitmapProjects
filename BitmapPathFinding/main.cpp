@@ -193,8 +193,16 @@ bool operator<(const node & a, const node & b)
 	return a.getPriority() > b.getPriority();
 }
 
-void FindStartAndFinish(bitmap_image* image)
+std::string pathFind(bitmap_image* image, const int & xStart, const int & yStart,
+	const int & xFinish, const int & yFinish)
 {
+	bitmap_image NewImage(image->width(), image->height());
+	NewImage.set_all_channels(255, 255, 255);
+	// Initialize the drawing code
+	image_drawer draw(NewImage);
+	// Drawing with a white pixel on the blank canvas
+	draw.pen_width(1);
+
 	for (unsigned int y = 0; y < image->height(); ++y)	// Loops through the y-coordinate
 	{
 		//std::cout << "\n";
@@ -211,11 +219,15 @@ void FindStartAndFinish(bitmap_image* image)
 			if (CurrentPixel.red == 0 && CurrentPixel.green == 255 && CurrentPixel.blue == 0) //green obstacle
 			{
 				map[x][y] = 1;
+				draw.pen_color(0, 255, 0);
+				draw.plot_pen_pixel(x, y);
 				//std::cout << "G";
 			}
 			if (CurrentPixel.red == 0 && CurrentPixel.green == 0 && CurrentPixel.blue == 255) //blue Start pixel
 			{
 				map[x][y] = 2;
+				draw.pen_color(0, 0, 255);
+				draw.plot_pen_pixel(x, y);
 				//std::cout << "B";
 				startX = x;
 				startY = y;
@@ -223,17 +235,15 @@ void FindStartAndFinish(bitmap_image* image)
 			if (CurrentPixel.red == 255 && CurrentPixel.green == 0 && CurrentPixel.blue == 0) //red Finish pixel
 			{
 				map[x][y] = 4;
+				draw.pen_color(255, 0, 0);
+				draw.plot_pen_pixel(x, y);
 				//std::cout << "R";
 				endX = x;
 				endY = y;
 			}
 		}
 	}
-}
 
-std::string pathFind(const int & xStart, const int & yStart,
-	const int & xFinish, const int & yFinish)
-{
 	static std::priority_queue<node> pq[2]; // list of open (not-yet-tried) nodes
 	static int pqi; // pq index
 	static node* n0;
@@ -271,6 +281,7 @@ std::string pathFind(const int & xStart, const int & yStart,
 		n0 = new node(pq[pqi].top().getxPos(), pq[pqi].top().getyPos(),
 			pq[pqi].top().getLevel(), pq[pqi].top().getPriority());
 
+
 		x = n0->getxPos(); y = n0->getyPos();
 
 		pq[pqi].pop(); // remove the node from the open list
@@ -290,6 +301,8 @@ std::string pathFind(const int & xStart, const int & yStart,
 				j = dir_map[x][y];
 				c = '0' + (j + dir / 2) % dir;
 				path = c + path;
+				draw.pen_color(255, 105, 180);
+				draw.plot_pen_pixel(x, y);
 				x += dx[j];
 				y += dy[j];
 			}
@@ -298,6 +311,7 @@ std::string pathFind(const int & xStart, const int & yStart,
 			delete n0;
 			// empty the leftover nodes
 			while (!pq[pqi].empty()) pq[pqi].pop();
+			NewImage.save_image("SolvedMaze.bmp");
 			return path;
 		}
 
@@ -305,7 +319,7 @@ std::string pathFind(const int & xStart, const int & yStart,
 		for (i = 0; i<dir; i++)
 		{
 			xdx = x + dx[i]; ydy = y + dy[i];
-
+			
 			if (!(xdx<0 || xdx>n - 1 || ydy<0 || ydy>m - 1 || map[xdx][ydy] == 1
 				|| closed_nodes_map[xdx][ydy] == 1))
 			{
@@ -315,6 +329,8 @@ std::string pathFind(const int & xStart, const int & yStart,
 				m0->nextLevel(i);
 				m0->updatePriority(xFinish, yFinish);
 
+				
+
 				// if it is not in the open list then add into that
 				if (open_nodes_map[xdx][ydy] == 0)
 				{
@@ -323,6 +339,9 @@ std::string pathFind(const int & xStart, const int & yStart,
 					// mark its parent node direction
 					delete m0;
 					dir_map[xdx][ydy] = (i + dir / 2) % dir;
+
+					
+
 				}
 				else if (open_nodes_map[xdx][ydy]>m0->getPriority())
 				{
@@ -330,6 +349,8 @@ std::string pathFind(const int & xStart, const int & yStart,
 					open_nodes_map[xdx][ydy] = m0->getPriority();
 					// update the parent direction info
 					dir_map[xdx][ydy] = (i + dir / 2) % dir;
+
+					
 
 					// replace the node
 					// by emptying one pq to the other one
@@ -361,69 +382,6 @@ std::string pathFind(const int & xStart, const int & yStart,
 	return ""; // no route found
 }
 
-void MazeDraw(std::string route, bitmap_image inputImage)
-{
-	bitmap_image NewImage(inputImage.width(), inputImage.height());
-	NewImage.set_all_channels(255, 255, 255);
-
-	if (route.length()>0)
-	{
-		int j; char c;
-		int x = startX;
-		int y = startY;
-		map[x][y] = 2;
-		for (unsigned int i = 0; i<route.length(); i++)
-		{
-			c = route.at(i);
-			j = atoi(&c);
-			x = x + dx[j];
-			y = y + dy[j];
-			map[x][y] = 3;
-		}
-		map[x][y] = 4;
-
-		// Initialize the drawing code
-		image_drawer draw(NewImage);
-		// Drawing with a white pixel on the blank canvas
-		draw.pen_width(1);
-
-		// display the map with the route
-		for (int y = 0; y<m; y++)
-		{
-			for (int x = 0; x < n; x++)
-			{
-				if (map[x][y] == 1)
-				{
-					draw.pen_color(0, 255, 0);
-					draw.plot_pen_pixel(x, y);
-					//std::cout << "O"; //obstacle
-				}
-				if (map[x][y] == 2)
-				{
-					//std::cout << "S"; //start
-					draw.pen_color(0, 0, 255);
-					draw.plot_pen_pixel(x, y);
-				}
-				if (map[x][y] == 3)
-				{
-					//std::cout << "R"; //route
-					draw.pen_color(255, 105, 180);
-					draw.plot_pen_pixel(x, y);
-				}
-				if (map[x][y] == 4)
-				{
-					//std::cout << "F"; //finish
-					draw.pen_color(255, 0, 0);
-					draw.plot_pen_pixel(x, y);
-				}
-			}
-			//std::cout << "\n" << std::endl;
-		}
-	}
-	NewImage.save_image("SolvedMaze.bmp");
-}
-
-
 int Maze(int argc, char ** argv)
 {
 	std::string fileName1 = "maze.bmp";
@@ -437,18 +395,13 @@ int Maze(int argc, char ** argv)
 		printf("Error - Failed to open bmp");
 		return 1;
 	}
-	FindStartAndFinish(&image1);
-	std::cout << "\nStart X: " << startX << "\nStart Y: " << startY << " " << "\nEnd X: " << endX << "\nEnd Y: " << endY << std::endl;
-	//std::cout << "test: " << TheMap.size() <<std::endl;
-
+	
 	clock_t start = clock();
-	std::string route = pathFind(startX, startY, endX, endY);
+	std::string route = pathFind(&image1, startX, startY, endX, endY);
 	if (route == "") std::cout << "An empty route generated!" << std::endl;
 	clock_t end = clock();
 	double time_elapsed = double(end - start);
 	std::cout << "\nTime to calculate the route (ms): " << time_elapsed << std::endl;
-
-	MazeDraw(route, image1);
 
 	std::string fileName2 = "SolvedMaze.bmp";
 	bitmap_image image2(fileName2);
